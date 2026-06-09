@@ -29,7 +29,14 @@ RUN mkdir -p /usr/share/backgrounds/turtlinux
 #RUN echo -e "[Theme]\nCurrent=turtlinux" > /etc/sddm.conf.d/branding.conf
 RUN mkdir -p /usr/share/sounds/turtlinux
 COPY branding/startup.wav /usr/share/sounds/turtlinux/startup.wav
-COPY config/turtlinux-startup.desktop /etc/xdg/autostart/
+COPY config/startup.desktop /etc/xdg/autostart/
+COPY branding/turtlinux.png /usr/share/pixmaps/turtlinux.png
+COPY branding/turtlinux.png /usr/share/icons/hicolor/256x256/apps/turtlinux.png
+
+# [ FASTFETCH & NEOFETCH ]
+RUN mkdir -p /etc/fastfetch /etc/neofetch
+COPY config/fastfetch.jsonc /etc/fastfetch/config.jsonc
+COPY config/neofetch.conf /etc/neofetch/config.conf
 
 # [ FINISH ]
 RUN bootc container lint
