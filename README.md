@@ -1,6 +1,6 @@
-<center>
+<div align="center">
 <h1>🐢 TurtLinux 🐧</h1>
-</center>
+</div>
 
 TurtLinux is an upcoming Fedora Spin meant to be agentic, that includes common day to day applications likes libre-office pre-installed.
 
@@ -31,6 +31,6 @@ Contribution guidelines will be mentioned soon. For now, stick to forks and PRs.
 
 ---
 
-<center>
+<div align="center">
 Made with ♥ by Ethan Lee and (ing) Studios
-</center>
+</div>
