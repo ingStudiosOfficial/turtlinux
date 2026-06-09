@@ -52,4 +52,8 @@ sudo podman run \
   "$TARGET_IMAGE"
 
 echo -e "${LIGHT_GREEN}-----------------------------------------------${NC}"
-echo -e "${GREEN}Finished, check ./iso for your TurtLinux ISO."
+echo -e "${GREEN}Cleaning up...${NC}"
+
+sudo podman system prune -a -f
+
+echo -e "${GREEN}Finished, check ./iso for your TurtLinux ISO.${NC}"
