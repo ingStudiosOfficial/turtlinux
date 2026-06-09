@@ -8,7 +8,7 @@ RUN dnf install -y \
     && dnf clean all
 
 # Install packages
-RUN dnf install -y libreoffice java-latest-openjdk kdenlive fastfetch discord htop vim git && dnf clean all
+RUN dnf install -y libreoffice java-latest-openjdk kdenlive konsole kcalc kate fastfetch discord htop vim git && dnf clean all
 
 # Copy turtagent binary to TurtLinux
 #COPY turtagent/bin/turtagent /usr/bin/turtagent
