@@ -59,5 +59,5 @@ then
 else
     echo -e "${LIGHT_GREEN}-----------------------------------------------${NC}"
     echo -e "${RED}Build failed, cache not cleaned.${NC}"
-    echo "Run 'sudo podman system purge -a -f' to clean manually and regain space."
+    echo "Run 'sudo podman system prune -a -f' to clean manually and freshen up."
 fi
