@@ -16,6 +16,19 @@ class AgentOverlay extends StatelessWidget {
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(120),
+            border: Border.all(color: theme.colorScheme.primary, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.primary.withAlpha(150),
+                blurRadius: 16,
+                spreadRadius: 4,
+              ),
+              BoxShadow(
+                color: theme.colorScheme.primary.withAlpha(50),
+                blurRadius: 32,
+                spreadRadius: 8,
+              ),
+            ],
           ),
           child: Row(
             spacing: 8,
