@@ -9,10 +9,15 @@ class ResponseOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    String currentResponse = '';
+
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return StreamBuilder(
       stream: responseStream,
       builder: (context, asyncSnapshot) {
-        final incomingText = asyncSnapshot.data ?? '...';
+        final incomingText = asyncSnapshot.data ?? '';
+        currentResponse += incomingText;
 
         return Padding(
           padding: const EdgeInsets.all(16),
@@ -22,9 +27,23 @@ class ResponseOverlay extends StatelessWidget {
               padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(120),
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Row(spacing: 8, children: [Text(incomingText)]),
+              child: Row(
+                spacing: 8,
+                children: [
+                  Expanded(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: screenHeight * 0.5,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Text(currentResponse),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
