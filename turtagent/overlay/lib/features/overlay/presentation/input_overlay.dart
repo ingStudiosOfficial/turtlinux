@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
 
-class InputOverlay extends StatelessWidget {
-  const InputOverlay({super.key});
+class InputOverlay extends StatefulWidget {
+  final void Function(String) onPrompt;
+
+  const InputOverlay({super.key, required this.onPrompt});
+
+  @override
+  State<InputOverlay> createState() => _InputOverlayState();
+}
+
+class _InputOverlayState extends State<InputOverlay> {
+  final TextEditingController _promptTextController = TextEditingController();
+
+  @override
+  void dispose() {
+    _promptTextController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +50,7 @@ class InputOverlay extends StatelessWidget {
             children: [
               Expanded(
                 child: TextField(
+                  controller: _promptTextController,
                   keyboardType: TextInputType.text,
                   decoration: InputDecoration(
                     hintText: 'Ask Tutel',
@@ -49,7 +65,7 @@ class InputOverlay extends StatelessWidget {
                 color: theme.colorScheme.onSurface,
               ),
               IconButton.filled(
-                onPressed: () => {},
+                onPressed: _onSend,
                 icon: const Icon(Icons.send),
               ),
             ],
@@ -57,5 +73,9 @@ class InputOverlay extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _onSend() {
+    widget.onPrompt(_promptTextController.text);
   }
 }
