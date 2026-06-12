@@ -83,5 +83,4 @@ COPY config/fastfetch.jsonc /etc/fastfetch/config.jsonc
 COPY config/neofetch.conf /etc/neofetch/config.conf
 
 # [ FINISH ]
-RUN rm -rf /run/* /var/log/*
 RUN bootc container lint
