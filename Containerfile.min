@@ -47,7 +47,7 @@ RUN mkdir -p /etc/fastfetch /etc/neofetch
 RUN touch /etc/fastfetch/tortuga.txt
 RUN touch /etc/neofetch/tortuga.txt
 RUN chafa /usr/share/pixmaps/tortugalinux.png > /etc/fastfetch/tortuga.txt
-COPY /etc/fastfetch/tortuga.txt /etc/neofetch/tortuga.txt
+RUN copy /etc/fastfetch/tortuga.txt /etc/neofetch/tortuga.txt
 
 RUN mkdir -p /usr/share/plymouth/themes/tortugalinux
 COPY branding/plymouth/tortugalinux.plymouth /usr/share/plymouth/themes/tortugalinux/
