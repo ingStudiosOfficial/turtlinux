@@ -11,7 +11,7 @@ RUN dnf install -y \
     https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-45.noarch.rpm \
     https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-45.noarch.rpm \
     && dnf clean all
-RUN dnf install -y NetworkManager konsole dolphin firefox vim && dnf clean all
+RUN dnf install -y NetworkManager konsole dolphin firefox vim chafa && dnf clean all
 
 RUN mkdir -p /etc/xdg
 
