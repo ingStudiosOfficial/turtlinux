@@ -1,2 +1,4 @@
 *.proto linguist-language=Protobuf
 *.proto linguist-detectable=true
+*.sh linguist-language=Shell
+*.sh linguist-detectable=true
