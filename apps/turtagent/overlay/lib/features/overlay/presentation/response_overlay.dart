@@ -18,6 +18,7 @@ class ResponseOverlay extends StatelessWidget {
       stream: responseStream,
       builder: (context, asyncSnapshot) {
         final incomingData = asyncSnapshot.data;
+
         currentResponse += incomingData?.text ?? '';
 
         return Padding(

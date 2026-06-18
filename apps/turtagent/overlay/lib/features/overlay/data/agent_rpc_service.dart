@@ -33,6 +33,8 @@ class AgentRpcService {
         if (response.isFinal) break;
       }
     } catch (error) {
+      if ((error as GrpcError).codeName == 'CANCELLED') return;
+
       yield (
         isThinking: false,
         text: 'Error: Lost connection to turtagent daemon',

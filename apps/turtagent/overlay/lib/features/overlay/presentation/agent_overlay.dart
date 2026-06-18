@@ -16,7 +16,8 @@ class _AgentOverlayState extends State<AgentOverlay> {
   bool _showResponseOverlay = false;
   final _agentRpcService = AgentRpcService();
   late Stream<({bool isThinking, String text})> _responseStream;
-  late StreamSubscription<({bool isThinking, String text})> _responseStreamSubscription;
+  late StreamSubscription<({bool isThinking, String text})>
+  _responseStreamSubscription;
   final _inputOverlayController = InputOverlayController();
 
   @override
@@ -51,8 +52,6 @@ class _AgentOverlayState extends State<AgentOverlay> {
   }
 
   void _onStop() {
-    _responseStreamSubscription.cancel();
     _agentRpcService.cancelCurrentStream();
-    _agentRpcService.shutdown();
   }
 }

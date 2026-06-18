@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os/exec"
 
 	"github.com/ollama/ollama/api"
 )
@@ -22,7 +23,7 @@ func InitializeOllama() *OllamaRequest {
 
 	ctx := context.Background()
 
-	model := "gemma4:e2b"
+	model := "tutel:latest"
 
 	modelsResp, err := client.List(ctx)
 	if err != nil {
@@ -38,18 +39,12 @@ func InitializeOllama() *OllamaRequest {
 	}
 
 	if hasModel == false {
-		client.Pull(ctx, &api.PullRequest{
-			Model: model,
-		}, func(resp api.ProgressResponse) error {
-			if resp.Total > 0 {
-				percent := (float64(resp.Completed)) / (float64(resp.Total * 100))
-				fmt.Printf("Status: %s (%.2f%% completed)\n", resp.Status, percent)
-			} else {
-				fmt.Printf("Status: %s\n", resp.Status)
-			}
+		cmd := exec.Command("sh", "-c", "cd ../model && chmod +x ./buildmodel.sh && ./buildmodel.sh")
 
-			return nil
-		})
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			log.Fatalf("Error while creating model: %v\nOutput: %s\n", err, output)
+		}
 	}
 
 	return &OllamaRequest{
