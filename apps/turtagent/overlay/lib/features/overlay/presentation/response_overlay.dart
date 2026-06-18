@@ -41,7 +41,11 @@ class ResponseOverlay extends StatelessWidget {
                       ),
                       child: SingleChildScrollView(
                         reverse: true,
-                        child: MarkdownBody(data: currentResponse),
+                        child: _generateResponseBody(
+                          theme,
+                          currentResponse,
+                          incomingData?.isThinking ?? false,
+                        ),
                       ),
                     ),
                   ),
@@ -52,5 +56,23 @@ class ResponseOverlay extends StatelessWidget {
         );
       },
     );
+  }
+
+  Widget _generateResponseBody(
+    ThemeData theme,
+    String response,
+    bool isThinking,
+  ) {
+    if (isThinking) {
+      return Padding(
+        padding: const EdgeInsets.all(8),
+        child: Container(
+          color: theme.colorScheme.surfaceContainer,
+          child: MarkdownBody(data: response),
+        ),
+      );
+    }
+
+    return MarkdownBody(data: response);
   }
 }
