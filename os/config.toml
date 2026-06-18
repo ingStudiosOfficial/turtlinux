@@ -1,4 +1,5 @@
 [[customizations.user]]
 name = "turt"
-password = "$6$rounds=4096$rounds=4096$saltsaltsalt$M2Vv3wXfN7d9.GZ0yG1Z7v.V8Cj6z7mYn3xVp1KjW8f6L5vM4x8UoZ3r7wB5eG.g0"
+password = "turtlinux"
 description = "TurtLinux User"
+groups = ["wheel"]
