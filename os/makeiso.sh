@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -rf ./build/dist
+sudo  rm -rf ./build/dist
 
 mkdir ./build/dist
 

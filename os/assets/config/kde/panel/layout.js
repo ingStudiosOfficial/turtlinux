@@ -2,9 +2,7 @@ var panel = new Panel
 panel.location = 'bottom';
 panel.height = gridUnit * 2;
 
-var kickoff = panel.addWidget('org.kde.plasma.kickoff');
-kickoff.currentConfigGroup = ['General'];
-kickoff.writeConfig('icon', 'start-here-turtlinux.svg'); 
+panel.addWidget('org.kde.plasma.kickoff');
 
 panel.addWidget('org.kde.plasma.pager');
 

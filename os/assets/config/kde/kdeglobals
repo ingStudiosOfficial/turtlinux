@@ -1,0 +1,13 @@
+[General]
+font=Google Sans Flex,10,-1,5,400,0,0,0,0,0,Regular
+fixed=Google Sans Code,10,-1,5,400,0,0,0,0,0,Regular
+menuFont=Google Sans Flex,10,-1,5,400,0,0,0,0,0,Regular
+toolBarFont=Google Sans Flex,10,-1,5,400,0,0,0,0,0,Regular
+smallestReadableFont=Google Sans Flex,8,-1,5,400,0,0,0,0,0,Regular
+ControlSequenceFont=Google Sans Code,10,-1,5,400,0,0,0,0,0,Regular
+
+[KDE]
+LookAndFeelPackage=org.kde.breezelight.desktop
+
+[Icons]
+Theme=Papirus

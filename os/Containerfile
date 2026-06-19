@@ -6,12 +6,32 @@ RUN dnf install -y \
         plasma-workspace-wayland \
         chromium \
         git \
+        papirus-icon-theme \
         micro && \
     dnf clean all
 
+# Customize distro name
+RUN echo "TurtLinux" > /etc/hostname
+
+# Copy font assets
+COPY ./assets/fonts/Google_Sans_Flex/ /usr/share/fonts/google_sans_flex
+COPY ./assets/fonts/Google_Sans_Code/ /usr/share/fonts/google_sans_code
+
+# Rebuild system font cache
+RUN fc-cache -f -v
+
+# Configure kdeglobals
+RUN mkdir -p /etc/xdg
+COPY ./assets/config/kde/kdeglobals /etc/xdg/kdeglobals
+
+# Customize KDE icon for hicolor and breeze
+COPY ./assets/config/kde/panel/start-here-turtlinux.svg /usr/share/icons/hicolor/scalable/apps/start-here.svg
+COPY ./assets/config/kde/panel/start-here-turtlinux.svg /usr/share/icons/breeze/apps/scalable/start-here.svg
+
 # Customize KDE panel
-COPY ./assets/panel/start-here-turtlinux.svg /usr/share/icons/hicolor/scalable/apps/start-here-turtlinux.svg
 COPY ./assets/panel/content.js /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js
-RUN gtk-update-icon-cache -f /usr/share/icons/hicolor/
+
+RUN gtk-update-icon-cache -f /usr/share/icons/hicolor/ && \
+    gtk-update-icon-cache -f /usr/share/icons/breeze/
 
 RUN bootc container lint
