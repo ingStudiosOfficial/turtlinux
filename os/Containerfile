@@ -25,11 +25,10 @@ RUN mkdir -p /etc/xdg
 COPY ./assets/config/kde/kdeglobals /etc/xdg/kdeglobals
 
 # Customize KDE icon for hicolor and breeze
-COPY ./assets/config/kde/panel/start-here-turtlinux.svg /usr/share/icons/hicolor/scalable/apps/start-here.svg
-COPY ./assets/config/kde/panel/start-here-turtlinux.svg /usr/share/icons/breeze/apps/scalable/start-here.svg
+COPY ./assets/icons/start-here-turtlinux.svg /usr/share/icons/hicolor/scalable/apps/start-here.svg
 
 # Customize KDE panel
-COPY ./assets/panel/content.js /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js
+COPY ./assets/config/kde/panel/layout.js /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js
 
 RUN gtk-update-icon-cache -f /usr/share/icons/hicolor/ && \
     gtk-update-icon-cache -f /usr/share/icons/breeze/
