@@ -13,9 +13,13 @@ RUN dnf install -y \
 # Customize distro name
 RUN echo "TurtLinux" > /etc/hostname
 
+# Override distro identity
+COPY ./assets/os-release /etc/os-release
+COPY ./assets/os-release /usr/lib/os-release
+
 # Copy font assets
-COPY ./assets/fonts/Google_Sans_Flex/ /usr/share/fonts/google_sans_flex
-COPY ./assets/fonts/Google_Sans_Code/ /usr/share/fonts/google_sans_code
+COPY ./assets/fonts/Google_Sans_Flex/ /usr/share/fonts/google_sans_flex/
+COPY ./assets/fonts/Google_Sans_Code/ /usr/share/fonts/google_sans_code/
 
 # Rebuild system font cache
 RUN fc-cache -f -v
@@ -24,12 +28,23 @@ RUN fc-cache -f -v
 RUN mkdir -p /etc/xdg
 COPY ./assets/config/kde/kdeglobals /etc/xdg/kdeglobals
 
+# Customize main TurtLinux logo
+COPY ./assets/icons/turtlinux.svg /usr/share/icons/hicolor/scalable/apps/turtlinux.svg
+
 # Customize KDE icon for hicolor and breeze
 COPY ./assets/icons/start-here-turtlinux.svg /usr/share/icons/hicolor/scalable/apps/start-here.svg
 
 # Customize KDE panel
 COPY ./assets/config/kde/panel/layout.js /usr/share/plasma/layout-templates/org.kde.plasma.desktop.defaultPanel/contents/layout.js
 
+# Customize GRUB OS name
+RUN mkdir -p /etc/default && \
+    touch /etc/default/grub && \
+    grep -q 'GRUB_DISTRIBUTOR' /etc/default/grub \
+    && sed -i 's/GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR="TurtLinux"/' /etc/default/grub \
+    || echo 'GRUB_DISTRIBUTOR="TurtLinux"' >> /etc/default/grub
+
+# Update icon cache
 RUN gtk-update-icon-cache -f /usr/share/icons/hicolor/ && \
     gtk-update-icon-cache -f /usr/share/icons/breeze/
 
