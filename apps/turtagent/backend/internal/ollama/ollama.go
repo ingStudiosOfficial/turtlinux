@@ -2,6 +2,7 @@ package ollama
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os/exec"
@@ -71,7 +72,8 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 			Think:    &api.ThinkValue{Value: "medium"},
 			Messages: r.History,
 			Tools: []api.Tool{
-				tools.WindowsTool,
+				tools.GetWindowsTool(),
+				tools.GetPlasmoidTool(),
 			},
 		}
 
@@ -129,6 +131,27 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 					Role:    "tool",
 					Content: windows,
 				})
+
+			case "create_plasmoid_widget":
+				jsonBytes, err := json.Marshal(toolCall.Function.Arguments)
+				if err != nil {
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: "An error occurred while creating plasmoid widget.",
+					})
+					break
+				}
+
+				var plasmoidArgs tools.PlasmoidArguments
+				if err := json.Unmarshal(jsonBytes, &plasmoidArgs); err != nil {
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: "An error occurred while creating plasmoid widget.",
+					})
+					break
+				}
+
+				tools.CreatePlasmoid(plasmoidArgs.Id, plasmoidArgs.Title, plasmoidArgs.Description, plasmoidArgs.Body)
 			}
 		}
 	}

@@ -7,12 +7,16 @@ import (
 	"github.com/ollama/ollama/api"
 )
 
-var WindowsTool = api.Tool{
-	Type: "function",
-	Function: api.ToolFunction{
-		Name:        "get_windows",
-		Description: "Gets the current windows opened in the desktop environment",
-	},
+func GetWindowsTool() api.Tool {
+	windowsTool := api.Tool{
+		Type: "function",
+		Function: api.ToolFunction{
+			Name:        "get_windows",
+			Description: "Gets the current windows opened in the desktop environment",
+		},
+	}
+
+	return windowsTool
 }
 
 func GetWindows() string {
