@@ -1,9 +1,11 @@
 package tools
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/ollama/ollama/api"
 )
@@ -13,6 +15,20 @@ type PlasmoidArguments struct {
 	Title       string
 	Description string
 	Body        string
+}
+
+type KPluginData struct {
+	Name         string   `json:"Name"`
+	Icon         string   `json:"Icon"`
+	Description  string   `json:"Description"`
+	Id           string   `json:"Id"`
+	ServiceTypes []string `json:"ServiceTypes"`
+}
+
+type PlasmoidMetadata struct {
+	KPlugin           KPluginData `json:"KPlugin"`
+	KPackageStructure string      `json:"KPackageStructure"`
+	XPlasmaAPI        string      `json:"X-Plasma-API"`
 }
 
 func GetPlasmoidTool() api.Tool {
@@ -55,92 +71,92 @@ func GetPlasmoidTool() api.Tool {
 }
 
 func CreatePlasmoid(id string, title string, description string, body string) error {
-	plasmoidMetadata := fmt.Sprintf(`
-{
-	"KPlugin": {
-		"Name": "%s"
-		"Icon": "application-utilities"
-		"Description": "%s"
-		"Id": "dev.ingstudios.turtlinux.turtagent.%s"
-	},
-	"X-Plasma-API": "declarativeappletscript",
-	"X-Plasma-API-Minimum-Version": "6.0"
-}
-`, title, description, id)
+	fullID := fmt.Sprintf("dev.ingstudios.turtlinux.turtagent.%s", id)
 
-	fmt.Printf("Plasmoid metadata:\n%s\n", plasmoidMetadata)
+	metadataObj := PlasmoidMetadata{
+		KPlugin: KPluginData{
+			Name:         title,
+			Icon:         "application-utilities",
+			Description:  description,
+			Id:           fullID,
+			ServiceTypes: []string{"Plasma/Applet"},
+		},
+		KPackageStructure: "Plasma/Applet",
+		XPlasmaAPI:        "declarativeappletscript",
+	}
 
-	plasmoidQml := fmt.Sprintf(`
-import QtQuick
+	metadataBytes, err := json.MarshalIndent(metadataObj, "", "    ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal metadata: %v", err)
+	}
+
+	qmlEscaper := strings.NewReplacer(
+		`\`, `\\`,
+		`"`, `\"`,
+		"\n", `\n`,
+		"\r", `\r`,
+		"\t", `\t`,
+	)
+
+	esTitle := qmlEscaper.Replace(title)
+	esBody := qmlEscaper.Replace(body)
+
+	plasmoidQml := fmt.Sprintf(`import QtQuick
 import QtQuick.Layouts
 import org.kde.plasma.plasmoid
 import org.kde.plasma.components as PlasmaComponents
 
 PlasmoidItem {
-	id: root
+    id: root
 
-	fullRepresentation: Item {
-		Layout.preferredWidth: 200
-		Layout.preferredHeight: 200
+    fullRepresentation: Item {
+        Layout.preferredWidth: 200
+        Layout.preferredHeight: 200
 
-		ColumnLayout {
-			anchors.centerIn: parent
+        ColumnLayout {
+            anchors.centerIn: parent
 
-			PlasmaComponents.Label {
-				text: "%s"
-				font.pointSize: 16
-			}
+            PlasmaComponents.Label {
+                text: "%s"
+                font.pointSize: 16
+            }
 
-			PlasmaComponents.Label {
-				text: "%s"
-				font.pointSize: 12
-			}
-		}
-	}
-})
-`, title, body)
+            PlasmaComponents.Label {
+                text: "%s"
+                font.pointSize: 12
+            }
+        }
+    }
+}`, esTitle, esBody)
 
-	fmt.Printf("Plasmoid QML:\n%s\n", plasmoidQml)
-
-	mdkirCmd := exec.Command("bash", "-c", fmt.Sprintf(`mkdir -p ~/.local/share/plasma/plasmoids/dev.ingstudios.turtlinux.turtagent.%s/contents/ui`, id))
-
-	mkdirOutput, mkdirErr := mdkirCmd.CombinedOutput()
-	fmt.Printf("mkdir output: %s\n", mkdirOutput)
-	if mkdirErr != nil {
-		return mkdirErr
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to get home directory: %v", err)
 	}
 
-	qmlPath := fmt.Sprintf("~/.local/share/plasma/plasmoids/dev.ingstudios.turtlinux.turtagent.%s/contents/ui/main.qml", id)
+	baseDir := fmt.Sprintf("%s/.local/share/plasma/plasmoids/%s", homeDir, fullID)
+	uiDir := baseDir + "/contents/ui"
 
-	createQmlErr := os.WriteFile(qmlPath, []byte(plasmoidQml), 0644)
-	if createQmlErr != nil {
-		fmt.Printf("Error while creating QML file: %v\n", createQmlErr)
-		return createQmlErr
+	_ = os.RemoveAll(baseDir)
+
+	if err := os.MkdirAll(uiDir, 0755); err != nil {
+		return fmt.Errorf("failed to create directory: %v", err)
 	}
 
-	metadataPath := fmt.Sprintf("~/.local/share/plasma/plasmoids/dev.ingstudios.turtlinux.turtagent.%s/metadata.json", id)
-
-	createMetadataErr := os.WriteFile(metadataPath, []byte(plasmoidMetadata), 0644)
-	if createMetadataErr != nil {
-		fmt.Printf("Error while creating metadata file: %v\n", createMetadataErr)
-		return createMetadataErr
+	if err := os.WriteFile(uiDir+"/main.qml", []byte(plasmoidQml), 0644); err != nil {
+		return fmt.Errorf("failed to write QML: %v", err)
 	}
 
-	kpackageCmd := exec.Command("bash", "-c", `kpackagetool6 --type Plasma/Applet --list | grep com.example.mywidget`)
-
-	kpackageOutput, kpackageErr := kpackageCmd.CombinedOutput()
-	fmt.Printf("kpackage output: %s\n", kpackageOutput)
-	if kpackageErr != nil {
-		return kpackageErr
+	if err := os.WriteFile(baseDir+"/metadata.json", metadataBytes, 0644); err != nil {
+		return fmt.Errorf("failed to write metadata: %v", err)
 	}
 
-	kspaceviewerCmd := exec.Command("bash", "-c", `kspaceviewer --reload 2>/dev/null || killall plasmashell && kstart plasmashell`)
+	kpackageCmd := exec.Command("bash", "-c", fmt.Sprintf(`kpackagetool6 --type Plasma/Applet --list | grep "%s"`, fullID))
+	kpackageOutput, _ := kpackageCmd.CombinedOutput()
+	fmt.Printf("kpackage lookup output: %s\n", string(kpackageOutput))
 
-	kspaceviewerOutput, kspaceviewerErr := kspaceviewerCmd.CombinedOutput()
-	fmt.Printf("kpackage output: %s\n", kspaceviewerOutput)
-	if kspaceviewerErr != nil {
-		return kspaceviewerErr
-	}
+	reloadCmd := exec.Command("bash", "-c", `plasmoidviewer6 --reload 2>/dev/null || systemctl --user restart plasma-plasmashell 2>/dev/null || (killall plasmashell && kstart plasmashell)`)
+	_ = reloadCmd.Run()
 
 	return nil
 }

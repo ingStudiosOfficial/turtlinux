@@ -46,7 +46,7 @@ func InitializeOllama() *OllamaRequest {
 
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			log.Fatalf("Error while creating model: %v\nOutput: %s\n", err, output)
+			log.Fatalf("error while creating model: %v\nOutput: %s\n", err, output)
 		}
 	}
 
@@ -106,7 +106,7 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 
 		err := r.Client.Chat(r.Ctx, req, respFunc)
 		if err != nil {
-			return fmt.Errorf("Error during generation: %v\n", err)
+			return fmt.Errorf("error during generation: %v\n", err)
 		}
 
 		if len(toolCalls) == 0 {
@@ -151,7 +151,19 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 					break
 				}
 
-				tools.CreatePlasmoid(plasmoidArgs.Id, plasmoidArgs.Title, plasmoidArgs.Description, plasmoidArgs.Body)
+				if err := tools.CreatePlasmoid(plasmoidArgs.Id, plasmoidArgs.Title, plasmoidArgs.Description, plasmoidArgs.Body); err != nil {
+					fmt.Printf("An error occurred while creating plasmoid: %v\n", err)
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: "An error occurred while creating plasmoid widget.",
+					})
+					break
+				}
+
+				r.History = append(r.History, api.Message{
+					Role:    "tool",
+					Content: "Successfully created plasmoid widget. Tell the user that the widget is ready to be added to their desktop.",
+				})
 			}
 		}
 	}
