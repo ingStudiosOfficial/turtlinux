@@ -2,9 +2,12 @@ package tools
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/ollama/ollama/api"
@@ -18,17 +21,17 @@ type PlasmoidArguments struct {
 }
 
 type KPluginData struct {
-	Name         string   `json:"Name"`
-	Icon         string   `json:"Icon"`
-	Description  string   `json:"Description"`
-	Id           string   `json:"Id"`
-	ServiceTypes []string `json:"ServiceTypes"`
+	Name        string `json:"Name"`
+	Icon        string `json:"Icon"`
+	Description string `json:"Description"`
+	Id          string `json:"Id"`
 }
 
 type PlasmoidMetadata struct {
-	KPlugin           KPluginData `json:"KPlugin"`
-	KPackageStructure string      `json:"KPackageStructure"`
-	XPlasmaAPI        string      `json:"X-Plasma-API"`
+	KPlugin                      KPluginData `json:"KPlugin"`
+	KPackageStructure            string      `json:"KPackageStructure"`
+	XKDEPluginInfoKPluginVersion string      `json:"X-KDE-PluginInfo-KPluginVersion"`
+	XPlasmaAPIMinimumVersion     string      `json:"X-Plasma-API-Minimum-Version"`
 }
 
 func GetPlasmoidTool() api.Tool {
@@ -75,14 +78,14 @@ func CreatePlasmoid(id string, title string, description string, body string) er
 
 	metadataObj := PlasmoidMetadata{
 		KPlugin: KPluginData{
-			Name:         title,
-			Icon:         "application-utilities",
-			Description:  description,
-			Id:           fullID,
-			ServiceTypes: []string{"Plasma/Applet"},
+			Name:        title,
+			Icon:        "application-utilities",
+			Description: description,
+			Id:          fullID,
 		},
-		KPackageStructure: "Plasma/Applet",
-		XPlasmaAPI:        "declarativeappletscript",
+		KPackageStructure:            "Plasma/Applet",
+		XKDEPluginInfoKPluginVersion: "6.0",
+		XPlasmaAPIMinimumVersion:     "6.0",
 	}
 
 	metadataBytes, err := json.MarshalIndent(metadataObj, "", "    ")
@@ -151,12 +154,59 @@ PlasmoidItem {
 		return fmt.Errorf("failed to write metadata: %v", err)
 	}
 
-	kpackageCmd := exec.Command("bash", "-c", fmt.Sprintf(`kpackagetool6 --type Plasma/Applet --list | grep "%s"`, fullID))
-	kpackageOutput, _ := kpackageCmd.CombinedOutput()
-	fmt.Printf("kpackage lookup output: %s\n", string(kpackageOutput))
+	iconSrc := "assets/icons/turtagent-plasmoid.svg"
+	hicolorIconsDir := homeDir + "/.local/share/icons/hicolor"
+	iconDist := hicolorIconsDir + "/scalable/apps/turtagent-plasmoid.svg"
 
-	reloadCmd := exec.Command("bash", "-c", `plasmoidviewer6 --reload 2>/dev/null || systemctl --user restart plasma-plasmashell 2>/dev/null || (killall plasmashell && kstart plasmashell)`)
-	_ = reloadCmd.Run()
+	if !fileExists(iconDist) {
+		srcFile, err := os.Open(iconSrc)
+		if err != nil {
+			fmt.Printf("Error while opening icon: %v\n", err)
+			return err
+		}
+		defer srcFile.Close()
+
+		distDir := filepath.Dir(iconDist)
+		if err := os.MkdirAll(distDir, 0755); err != nil {
+			fmt.Printf("Error while creating directory: %v\n", err)
+			return err
+		}
+
+		distFile, err := os.Create(iconDist)
+		if err != nil {
+			fmt.Printf("Error while creating icon file: %v\n", err)
+			return err
+		}
+		defer distFile.Close()
+
+		if _, err := io.Copy(distFile, srcFile); err != nil {
+			fmt.Printf("Error while copying icon file: %v\n", err)
+			return err
+		}
+
+		if err := distFile.Sync(); err != nil {
+			fmt.Printf("Failed to sync dist file: %v\n", err)
+			return err
+		}
+
+		cmd := exec.Command("gtk-update-icon-cache", "-f", "-t", hicolorIconsDir)
+		if output, err := cmd.CombinedOutput(); err != nil {
+			fmt.Printf("Error while updating icon cache: %s\n", output)
+			return err
+		}
+	}
 
 	return nil
+}
+
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	if err == nil {
+		return true
+	}
+	if errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+
+	return false
 }
