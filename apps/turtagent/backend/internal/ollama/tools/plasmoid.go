@@ -79,7 +79,7 @@ func CreatePlasmoid(id string, title string, description string, body string) er
 	metadataObj := PlasmoidMetadata{
 		KPlugin: KPluginData{
 			Name:        title,
-			Icon:        "application-utilities",
+			Icon:        "turtagent-plasmoid",
 			Description: description,
 			Id:          fullID,
 		},
@@ -114,19 +114,22 @@ PlasmoidItem {
 
     fullRepresentation: Item {
         Layout.preferredWidth: 200
-        Layout.preferredHeight: 200
 
         ColumnLayout {
             anchors.centerIn: parent
 
             PlasmaComponents.Label {
                 text: "%s"
-                font.pointSize: 16
+                font.pointSize: 12
+				width: parent.width
+				wrapMode: Text.WordWrap
             }
 
             PlasmaComponents.Label {
                 text: "%s"
-                font.pointSize: 12
+                font.pointSize: 8
+				width: parent.width
+				wrapMode: Text.WordWrap
             }
         }
     }

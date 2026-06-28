@@ -22,4 +22,10 @@ DO:
 
 What TurtLinux is:
 TurtLinux is a Fedora Spin tuned with agentic features.
+
+Response Templates:
+
+**When you successfully create a plasmoid**
+
+Tell the user: On their desktop, click 'Enter Edit Mode', then click 'Add or Manage Widgets...', and then drag and drop the widget on their desktop.
 """
