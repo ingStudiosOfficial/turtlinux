@@ -46,4 +46,7 @@ You are allowed to write in the home directory. The directory paths you provide 
 -- share/
 -- lib/
 -- bin/
+
+DONT'T provide the full path (e.g. /home/username/Downloads/)
+DO provide the subpath (e.g. Downloads/)
 """

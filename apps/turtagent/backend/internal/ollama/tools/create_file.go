@@ -9,9 +9,9 @@ import (
 )
 
 type CreateFileArgs struct {
-	Name    string
-	Dir     string
-	Content string
+	Name    string `json:"filename"`
+	Dir     string `json:"directory"`
+	Content string `json:"content"`
 }
 
 func GetCreateFileTool() api.Tool {
@@ -40,7 +40,7 @@ func GetCreateFileTool() api.Tool {
 			Parameters: api.ToolFunctionParameters{
 				Type:       "object",
 				Properties: properties,
-				Required:   []string{"filename", "content"},
+				Required:   []string{"filename", "directory", "content"},
 			},
 		},
 	}
