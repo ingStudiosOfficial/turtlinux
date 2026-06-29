@@ -74,6 +74,7 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 			Tools: []api.Tool{
 				tools.GetWindowsTool(),
 				tools.GetPlasmoidTool(),
+				tools.GetCreateFileTool(),
 			},
 		}
 
@@ -163,6 +164,38 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 				r.History = append(r.History, api.Message{
 					Role:    "tool",
 					Content: "Successfully created plasmoid widget. Tell the user that the widget is ready to be added to their desktop.",
+				})
+
+			case "create_file":
+				jsonBytes, err := json.Marshal(toolCall.Function.Arguments)
+				if err != nil {
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: "An error occurred while creating file.",
+					})
+					break
+				}
+
+				var fileArgs tools.CreateFileArgs
+				if err := json.Unmarshal(jsonBytes, &fileArgs); err != nil {
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: "An error occurred while creating file.",
+					})
+					break
+				}
+
+				if err := tools.CreateFile(fileArgs.Name, fileArgs.Dir, fileArgs.Content); err != nil {
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: "An error occurred while creating file.",
+					})
+					break
+				}
+
+				r.History = append(r.History, api.Message{
+					Role:    "tool",
+					Content: "Successfully created file.",
 				})
 			}
 		}
