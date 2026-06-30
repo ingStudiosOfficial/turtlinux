@@ -75,6 +75,7 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 				tools.GetWindowsTool(),
 				tools.GetPlasmoidTool(),
 				tools.GetCreateFileTool(),
+				tools.GetListDirTool(),
 			},
 		}
 
@@ -156,7 +157,7 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 					fmt.Printf("An error occurred while creating plasmoid: %v\n", err)
 					r.History = append(r.History, api.Message{
 						Role:    "tool",
-						Content: "An error occurred while creating plasmoid widget.",
+						Content: fmt.Sprintf("An error occurred while creating plasmoid widget: %v", err),
 					})
 					break
 				}
@@ -188,7 +189,7 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 				if err := tools.CreateFile(fileArgs.Name, fileArgs.Dir, fileArgs.Content); err != nil {
 					r.History = append(r.History, api.Message{
 						Role:    "tool",
-						Content: "An error occurred while creating file.",
+						Content: fmt.Sprintf("An error occurred while creating file: %v", err),
 					})
 					break
 				}
@@ -196,6 +197,39 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 				r.History = append(r.History, api.Message{
 					Role:    "tool",
 					Content: "Successfully created file.",
+				})
+
+			case "list_directory":
+				jsonBytes, err := json.Marshal(toolCall.Function.Arguments)
+				if err != nil {
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: "An error occurred while listing directory.",
+					})
+					break
+				}
+
+				var dirArgs tools.ListDirArgs
+				if err := json.Unmarshal(jsonBytes, &dirArgs); err != nil {
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: "An error occurred while listing directory.",
+					})
+					break
+				}
+
+				contents, err := tools.ListDirectory(dirArgs.Directory)
+				if err != nil {
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: fmt.Sprintf("An error occurred while listing directory: %v", err),
+					})
+					break
+				}
+
+				r.History = append(r.History, api.Message{
+					Role:    "tool",
+					Content: contents,
 				})
 			}
 		}

@@ -49,4 +49,12 @@ You are allowed to write in the home directory. The directory paths you provide 
 
 DONT'T provide the full path (e.g. /home/username/Downloads/)
 DO provide the subpath (e.g. Downloads/)
+
+When Coding:
+When coding, remember to display the code in backticks, example for JavaScript:
+```javascript
+const x = 10;
+const y = 9;
+console.log(x - y);
+```
 """
