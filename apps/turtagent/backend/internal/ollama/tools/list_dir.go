@@ -10,7 +10,7 @@ import (
 )
 
 type ListDirArgs struct {
-	Directory string `json:"Directory"`
+	Directory string `json:"directory"`
 }
 
 func GetListDirTool() api.Tool {

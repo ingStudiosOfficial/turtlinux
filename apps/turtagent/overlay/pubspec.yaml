@@ -37,6 +37,7 @@ dependencies:
   protobuf: ^6.0.0
   grpc: ^5.1.0
   flutter_markdown_plus: ^1.0.7
+  dynamic_color: ^1.8.1
 
 dev_dependencies:
   flutter_test:

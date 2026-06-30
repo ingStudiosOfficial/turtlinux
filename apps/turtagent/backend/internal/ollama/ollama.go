@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"turtagent/backend/internal/ollama/skills"
 	"turtagent/backend/internal/ollama/tools"
 
 	"github.com/ollama/ollama/api"
@@ -66,6 +67,18 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 		Content: message,
 	})
 
+	skills, err := skills.GetAllSkills()
+	if err != nil {
+		log.Fatalf("error while getting skills: %v\n", err)
+	}
+
+	fmt.Printf("Skills: %s\n", skills)
+
+	r.History = append(r.History, api.Message{
+		Role:    "system",
+		Content: "Available skills (use get_skill if required):\n" + skills,
+	})
+
 	for {
 		req := &api.ChatRequest{
 			Model:    r.Model,
@@ -76,6 +89,7 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 				tools.GetPlasmoidTool(),
 				tools.GetCreateFileTool(),
 				tools.GetListDirTool(),
+				tools.GetGetSkillTool(),
 			},
 		}
 
@@ -231,7 +245,45 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 					Role:    "tool",
 					Content: contents,
 				})
+
+			case "get_skill":
+				jsonBytes, err := json.Marshal(toolCall.Function.Arguments)
+				if err != nil {
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: "An error occurred while getting skill.",
+					})
+					break
+				}
+
+				var getSkillArgs tools.GetSkillArgs
+				if err := json.Unmarshal(jsonBytes, &getSkillArgs); err != nil {
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: "An error occurred while getting skill.",
+					})
+					break
+				}
+
+				skill, err := tools.GetSkill(getSkillArgs.Name)
+				if err != nil {
+					r.History = append(r.History, api.Message{
+						Role:    "tool",
+						Content: "An error occurred while getting skill.",
+					})
+					break
+				}
+
+				r.History = append(r.History, api.Message{
+					Role:    "tool",
+					Content: skill,
+				})
 			}
+
+			r.History = append(r.History, api.Message{
+				Role:    "system",
+				Content: "With the result provided, fulfil the user's original task of: '" + message + "'",
+			})
 		}
 	}
 }
