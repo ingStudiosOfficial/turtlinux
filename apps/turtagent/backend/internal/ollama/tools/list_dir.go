@@ -18,7 +18,7 @@ func GetListDirTool() api.Tool {
 
 	properties.Set("directory", api.ToolProperty{
 		Type:        api.PropertyType{"string"},
-		Description: "The directory you want to list",
+		Description: "The directory you want to list (provide a path RELATIVE to the user's home directory, e.g. /Downloads, not /home/user/Downloads)",
 	})
 
 	listDirTool := api.Tool{

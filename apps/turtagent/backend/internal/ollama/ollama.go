@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"strconv"
+	"strings"
 	"turtagent/backend/internal/ollama/skills"
 	"turtagent/backend/internal/ollama/tools"
 
@@ -78,6 +80,8 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 		Role:    "system",
 		Content: "Available skills (use get_skill if required):\n" + skills,
 	})
+
+	toolsCalled := []string{}
 
 	for {
 		req := &api.ChatRequest{
@@ -241,6 +245,8 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 					break
 				}
 
+				fmt.Println("Directory contents: " + contents)
+
 				r.History = append(r.History, api.Message{
 					Role:    "tool",
 					Content: contents,
@@ -280,10 +286,25 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 				})
 			}
 
+			toolsCalled = append(toolsCalled, toolCall.Function.Name)
+
+			var builder strings.Builder
+
+			for i, tool := range toolsCalled {
+				fmt.Fprintf(&builder, "%s. %s", strconv.Itoa(i+1), tool)
+			}
+
 			r.History = append(r.History, api.Message{
 				Role:    "system",
-				Content: "With the result provided, fulfil the user's original task of: '" + message + "'",
+				Content: "With the result provided when you ran '" + toolCall.Function.Name + "', fulfil the user's original task of: '" + message + "'",
 			})
+
+			r.History = append(r.History, api.Message{
+				Role:    "system",
+				Content: "Tools you have ALREADY called (do not call these again if not needed): " + builder.String(),
+			})
+
+			fmt.Println(r.History)
 		}
 	}
 }
