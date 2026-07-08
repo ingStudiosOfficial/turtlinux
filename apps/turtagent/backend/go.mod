@@ -3,6 +3,7 @@ module turtagent/backend
 go 1.26.4
 
 require (
+	github.com/gvalkov/golang-evdev v0.0.0-20220815104727-7e27d6ce89b6
 	github.com/ollama/ollama v0.30.7
 	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
@@ -12,7 +13,6 @@ require (
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gvalkov/golang-evdev v0.0.0-20220815104727-7e27d6ce89b6 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	golang.org/x/crypto v0.48.0 // indirect

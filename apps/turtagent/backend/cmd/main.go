@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"turtagent/backend/internal/mouse"
 	"turtagent/backend/internal/ollama"
 	"turtagent/backend/server"
 
@@ -20,6 +21,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to bind to port %s\n", err)
 	}
+
+	go mouse.DetectMouse()
 
 	grpcServer := grpc.NewServer()
 
