@@ -164,6 +164,16 @@ func DetectMouse() {
 			//fmt.Printf("Event: %v\n", event)
 
 			now := time.Now()
+			cutoff := now.Add(-500 * time.Millisecond)
+
+			validChanges := directionChanges[:0]
+
+			for _, t := range directionChanges {
+				if t.After(cutoff) {
+					validChanges = append(validChanges, t)
+				}
+			}
+			directionChanges = validChanges
 
 			if len(directionChanges) <= 0 {
 				directionChanges = append(directionChanges, now)
@@ -177,8 +187,8 @@ func DetectMouse() {
 				dx := event.Value - pX
 				fmt.Printf("X delta: %v\n", dx)
 
-				if dx <= config.MinDelta {
-					break
+				if abs(dx) <= config.MinDelta {
+					continue
 				}
 
 				currentRight := dx > 0
@@ -193,8 +203,8 @@ func DetectMouse() {
 				dy := event.Value - pY
 				fmt.Printf("Y delta: %v\n", dy)
 
-				if dy <= config.MinDelta {
-					break
+				if abs(dy) <= config.MinDelta {
+					continue
 				}
 
 				currentDown := dy > 0
@@ -203,6 +213,9 @@ func DetectMouse() {
 				previousDown = currentDown
 
 				pY = event.Value
+
+			default:
+				continue
 			}
 
 			fmt.Printf("Direction changed: %t\n", directionChanged)
