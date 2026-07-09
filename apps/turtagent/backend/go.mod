@@ -3,7 +3,7 @@ module turtagent/backend
 go 1.26.4
 
 require (
-	github.com/gvalkov/golang-evdev v0.0.0-20220815104727-7e27d6ce89b6
+	github.com/holoplot/go-evdev v0.0.0-20260504100651-66d1748fe847
 	github.com/ollama/ollama v0.30.7
 	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
