@@ -90,74 +90,78 @@ func DetectMouse() {
 	var pX, pY int32
 	var previousRight, previousDown bool
 
-	/*
-		go func() {
-			for event := range relEventChan {
-				fmt.Printf("Event: %v\n", event)
+	go func() {
+		for event := range relEventChan {
+			//fmt.Printf("Event: %v\n", event)
 
-				now := time.Now()
-				directionChanged := false
+			now := time.Now()
+			cutoff := now.Add(-500 * time.Millisecond)
 
-				if len(directionChanges) <= 0 {
-					directionChanges = append(directionChanges, now)
-				}
+			validChanges := directionChanges[:0]
 
-				latestChange := directionChanges[len(directionChanges)-1]
-
-				if now.Sub(latestChange) <= config.WindowDuration {
-					directionChanges = append(directionChanges, now)
-				}
-
-				switch event.Code {
-				case evdev.REL_X: // change on x
-					fmt.Println("Change on X detected.")
-					dx := event.Value
-					if abs(dx) > config.MinDelta { // check if exceeds min delta
-						currentXDir := 1
-						if dx < 0 {
-							currentXDir = -1
-						}
-
-						if currentXDir != lastXDir {
-							directionChanged = true
-						}
-
-						lastXDir = currentXDir
-					}
-
-				case evdev.REL_Y: // change on y
-					fmt.Println("Change on Y detected.")
-					dy := event.Value
-					if abs(dy) > config.MinDelta { // check if exceeds min delta
-						currentYDir := 1
-						if dy < 0 {
-							currentYDir = -1
-						}
-
-						if currentYDir != lastYDir {
-							directionChanged = true
-						}
-
-						lastYDir = currentYDir
-					}
-				}
-
-				fmt.Printf("Direction changed: %t\n", directionChanged)
-
-				if directionChanged {
-					directionChanges = append(directionChanges, now)
-
-					if len(directionChanges) >= config.MinMovements { // check if alr exceeded min movements
-						fmt.Println("Mouse shake detected.")
-
-						directionChanges = nil
-						lastXDir = 0
-						lastYDir = 0
-					}
+			for _, t := range directionChanges {
+				if t.After(cutoff) {
+					validChanges = append(validChanges, t)
 				}
 			}
-		}()
-	*/
+			directionChanges = validChanges
+
+			if len(directionChanges) <= 0 {
+				directionChanges = append(directionChanges, now)
+			}
+
+			var directionChanged bool
+
+			switch event.Code {
+			case evdev.REL_X: // change on x
+				//fmt.Println("Change on X detected.")
+				dx := event.Value - pX
+				fmt.Printf("X delta: %v\n", dx)
+
+				if abs(dx) <= config.MinDelta {
+					continue
+				}
+
+				currentRight := dx > 0
+				directionChanged = currentRight != previousRight
+
+				previousRight = currentRight
+
+				pX = event.Value
+
+			case evdev.REL_Y: // change on y
+				//fmt.Println("Change on Y detected.")
+				dy := event.Value - pY
+				fmt.Printf("Y delta: %v\n", dy)
+
+				if abs(dy) <= config.MinDelta {
+					continue
+				}
+
+				currentDown := dy > 0
+				directionChanged = currentDown != previousDown
+
+				previousDown = currentDown
+
+				pY = event.Value
+
+			default:
+				continue
+			}
+
+			fmt.Printf("Direction changed: %t\n", directionChanged)
+
+			if directionChanged {
+				directionChanges = append(directionChanges, now)
+
+				if len(directionChanges) >= config.MinMovements { // check if alr exceeded min movements
+					fmt.Println("Mouse shake detected.")
+
+					directionChanges = nil
+				}
+			}
+		}
+	}()
 
 	go func() {
 		for event := range absEventChan {
