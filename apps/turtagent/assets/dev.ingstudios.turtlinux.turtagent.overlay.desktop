@@ -7,6 +7,6 @@ Comment=Overlay for the Turtagent AI assistant
 Exec=$HOME/.local/bin/turtagent_overlay
 Icon=turtagent-plasmoid
 Terminal=false
-Categories=Utility;Office;ArtificialIntelligence;
+Categories=Utility;System;ArtificialIntelligence;
 MimeType=text/plain;
 StartupNotify=true
