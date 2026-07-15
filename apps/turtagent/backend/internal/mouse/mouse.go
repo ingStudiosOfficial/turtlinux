@@ -3,6 +3,7 @@ package mouse
 import (
 	"fmt"
 	"log"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -81,7 +82,7 @@ func DetectMouse() {
 	}
 
 	config := ShakeInput{
-		MinMovements:   5,
+		MinMovements:   10,
 		WindowDuration: 100 * time.Millisecond,
 		MinDelta:       100,
 	}
@@ -230,6 +231,8 @@ func DetectMouse() {
 				if len(directionChanges) >= config.MinMovements { // check if alr exceeded min movements
 					fmt.Println("Mouse shake detected.")
 
+					launchOverlay()
+
 					directionChanges = nil
 				}
 			}
@@ -242,4 +245,15 @@ func abs(n int32) int32 {
 		return -n
 	}
 	return n
+}
+
+func launchOverlay() {
+	appName := "turtagent_overlay"
+
+	cmd := exec.Command(appName)
+
+	err := cmd.Start()
+	if err != nil {
+		fmt.Printf("Error while starting turtagent: %v\n", err)
+	}
 }

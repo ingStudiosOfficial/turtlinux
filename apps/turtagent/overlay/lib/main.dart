@@ -1,9 +1,13 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_single_instance/flutter_single_instance.dart';
 import 'package:turtagent/features/overlay/presentation/agent_overlay.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (await FlutterSingleInstance().isFirstInstance()) {
+    runApp(const MyApp());
+  }
 }
 
 class MyApp extends StatelessWidget {
