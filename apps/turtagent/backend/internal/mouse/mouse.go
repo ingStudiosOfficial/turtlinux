@@ -35,7 +35,6 @@ func DetectMouse() {
 	mouseDevices := []evdev.InputPath{}
 
 	for _, dev := range devices {
-		fmt.Printf("Device: %s\n", dev.Name)
 		lowerName := strings.ToLower(dev.Name)
 		if (strings.Contains(lowerName, "mouse") || strings.Contains(lowerName, "touch")) &&
 			!strings.Contains(lowerName, "consumer control") &&
@@ -61,8 +60,6 @@ func DetectMouse() {
 		fmt.Printf("Mouse device found: %s\n", dev.Name)
 
 		go func(d *evdev.InputDevice) {
-			fmt.Printf("Inside goroutine for device: %s\n", dev.Name)
-
 			for {
 				event, err := d.ReadOne() // gets stuck here (for mouse)
 				if err != nil {
@@ -93,8 +90,6 @@ func DetectMouse() {
 
 	go func() {
 		for event := range relEventChan {
-			//fmt.Printf("Event: %v\n", event)
-
 			now := time.Now()
 			cutoff := now.Add(-500 * time.Millisecond)
 
@@ -115,9 +110,7 @@ func DetectMouse() {
 
 			switch event.Code {
 			case evdev.REL_X: // change on x
-				//fmt.Println("Change on X detected.")
 				dx := event.Value - pX
-				fmt.Printf("X delta: %v\n", dx)
 
 				if abs(dx) <= config.MinDelta {
 					continue
@@ -131,9 +124,7 @@ func DetectMouse() {
 				pX = event.Value
 
 			case evdev.REL_Y: // change on y
-				//fmt.Println("Change on Y detected.")
 				dy := event.Value - pY
-				fmt.Printf("Y delta: %v\n", dy)
 
 				if abs(dy) <= config.MinDelta {
 					continue
@@ -150,8 +141,6 @@ func DetectMouse() {
 				continue
 			}
 
-			fmt.Printf("Direction changed: %t\n", directionChanged)
-
 			if directionChanged {
 				directionChanges = append(directionChanges, now)
 
@@ -166,8 +155,6 @@ func DetectMouse() {
 
 	go func() {
 		for event := range absEventChan {
-			//fmt.Printf("Event: %v\n", event)
-
 			now := time.Now()
 			cutoff := now.Add(-500 * time.Millisecond)
 
@@ -188,9 +175,7 @@ func DetectMouse() {
 
 			switch event.Code {
 			case evdev.ABS_X: // change on x
-				//fmt.Println("Change on X detected.")
 				dx := event.Value - pX
-				fmt.Printf("X delta: %v\n", dx)
 
 				if abs(dx) <= config.MinDelta {
 					continue
@@ -204,9 +189,7 @@ func DetectMouse() {
 				pX = event.Value
 
 			case evdev.ABS_Y: // change on y
-				//fmt.Println("Change on Y detected.")
 				dy := event.Value - pY
-				fmt.Printf("Y delta: %v\n", dy)
 
 				if abs(dy) <= config.MinDelta {
 					continue
@@ -222,8 +205,6 @@ func DetectMouse() {
 			default:
 				continue
 			}
-
-			fmt.Printf("Direction changed: %t\n", directionChanged)
 
 			if directionChanged {
 				directionChanges = append(directionChanges, now)
