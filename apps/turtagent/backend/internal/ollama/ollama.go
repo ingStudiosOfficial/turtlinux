@@ -294,16 +294,6 @@ func (r *OllamaRequest) GenerateFromText(message string, sendChunk func(string, 
 				fmt.Fprintf(&builder, "%s. %s", strconv.Itoa(i+1), tool)
 			}
 
-			r.History = append(r.History, api.Message{
-				Role:    "system",
-				Content: "With the result provided when you ran '" + toolCall.Function.Name + "', fulfil the user's original task of: '" + message + "'",
-			})
-
-			r.History = append(r.History, api.Message{
-				Role:    "system",
-				Content: "Tools you have ALREADY called (do not call these again if not needed): " + builder.String(),
-			})
-
 			fmt.Println(r.History)
 		}
 	}
