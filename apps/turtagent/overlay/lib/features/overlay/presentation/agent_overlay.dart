@@ -45,6 +45,7 @@ class _AgentOverlayState extends State<AgentOverlay> {
         onDone: () {
           _inputOverlayController.onEnd?.call();
         },
+        cancelOnError: true,
       );
     });
   }

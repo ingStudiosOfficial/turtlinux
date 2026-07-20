@@ -2,16 +2,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
-class ResponseOverlay extends StatefulWidget {
+class ResponseItem extends StatefulWidget {
   final Stream<({bool isThinking, String text})> responseStream;
 
-  const ResponseOverlay({super.key, required this.responseStream});
+  const ResponseItem({super.key, required this.responseStream});
 
   @override
-  State<ResponseOverlay> createState() => _ResponseOverlayState();
+  State<ResponseItem> createState() => _ResponseItemState();
 }
 
-class _ResponseOverlayState extends State<ResponseOverlay> {
+class _ResponseItemState extends State<ResponseItem> {
   String _currentThinking = '';
   String _currentResponse = '';
   StreamSubscription? _subscription;
@@ -23,7 +23,7 @@ class _ResponseOverlayState extends State<ResponseOverlay> {
   }
 
   @override
-  void didUpdateWidget(ResponseOverlay oldWidget) {
+  void didUpdateWidget(ResponseItem oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.responseStream != widget.responseStream) {
       _cancelSubscription();

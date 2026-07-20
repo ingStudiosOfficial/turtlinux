@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:turtagent_hub/features/chat/data/agent_rpc_service.dart';
+import 'package:turtagent_hub/features/chat/presentation/response_item.dart';
 
 class InputOverlayController {
   void Function()? onEnd;
@@ -15,8 +16,11 @@ class ChatContainer extends StatefulWidget {
 class _ChatContainerState extends State<ChatContainer> {
   final TextEditingController _promptTextController = TextEditingController();
   final _agentRpcService = AgentRpcService();
-  late Stream<({bool isThinking, String text})> _responseStream;
+  Stream<({bool isThinking, String text})>? _responseStream;
   final _inputOverlayController = InputOverlayController();
+
+  final List<({({bool isThinking, String text}) assistant, String user})>
+  _chatHistory = [];
 
   bool _isGenerating = false;
 
@@ -37,7 +41,19 @@ class _ChatContainerState extends State<ChatContainer> {
     final theme = Theme.of(context);
 
     return Column(
-      children: [Container(), const Spacer(), buildInputWidget(theme)],
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                if (_responseStream != null)
+                  ResponseItem(responseStream: _responseStream!),
+              ],
+            ),
+          ),
+        ),
+        Center(child: buildInputWidget(theme)),
+      ],
     );
   }
 
@@ -47,7 +63,7 @@ class _ChatContainerState extends State<ChatContainer> {
       child: FractionallySizedBox(
         widthFactor: 0.5,
         child: Container(
-          padding: EdgeInsets.all(12),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(120),
@@ -77,11 +93,11 @@ class _ChatContainerState extends State<ChatContainer> {
                     border: InputBorder.none,
                     fillColor: theme.colorScheme.surface,
                   ),
-                  onSubmitted: (value) => _onSend(),
+                  onSubmitted: (_) => _onSend(),
                 ),
               ),
               IconButton(
-                onPressed: () => {},
+                onPressed: () {},
                 icon: const Icon(Icons.mic),
                 color: theme.colorScheme.onSurface,
               ),
@@ -102,9 +118,26 @@ class _ChatContainerState extends State<ChatContainer> {
   }
 
   void _onSend() {
-    _onPrompt(_promptTextController.text);
-    _setGeneratingState(true);
+    final text = _promptTextController.text.trim();
+    if (text.isEmpty || _isGenerating) return;
+
+    final stream = _agentRpcService.streamPrompt(text).asBroadcastStream();
+
+    setState(() {
+      _responseStream = stream;
+      _isGenerating = true;
+
+      _chatHistory.add((assistant: (isThinking: false, text: ''), user: text));
+    });
+
     _promptTextController.clear();
+
+    stream.listen(
+      (data) {},
+      onDone: () => _onDone(),
+      onError: (_) => _onDone(),
+      cancelOnError: true,
+    );
   }
 
   void _onStop() {
@@ -119,20 +152,6 @@ class _ChatContainerState extends State<ChatContainer> {
   void _setGeneratingState(bool state) {
     setState(() {
       _isGenerating = state;
-    });
-  }
-
-  void _onPrompt(String prompt) {
-    setState(() {
-      _responseStream = _agentRpcService
-          .streamPrompt(prompt)
-          .asBroadcastStream();
-      _responseStream.listen(
-        (data) {},
-        onDone: () {
-          _inputOverlayController.onEnd?.call();
-        },
-      );
     });
   }
 }
