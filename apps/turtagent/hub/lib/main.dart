@@ -1,6 +1,7 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:turtagent_hub/features/chat/presentation/chat.dart';
+import 'package:turtagent_hub/features/conversations/presentation/conversations_sidebar.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,16 +31,7 @@ class MyApp extends StatelessWidget {
           ),
           home: Scaffold(
             appBar: AppBar(title: const Text('Turtagent Hub')),
-            drawer: Drawer(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  DrawerHeader(child: const Text('Turtagent Hub')),
-                  ListTile(title: const Text('Chat 1')),
-                  ListTile(title: const Text('Chat 2')),
-                ],
-              ),
-            ),
+            drawer: Drawer(child: const ConversationsSidebar()),
             body: const ChatContainer(),
           ),
         );

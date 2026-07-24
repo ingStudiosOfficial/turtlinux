@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:turtagent_hub/data/models/chat_types.dart';
 import 'package:turtagent_hub/features/chat/data/agent_rpc_service.dart';
 import 'package:turtagent_hub/features/chat/presentation/response_item.dart';
 
@@ -18,10 +19,7 @@ class _ChatContainerState extends State<ChatContainer> {
   final _agentRpcService = AgentRpcService();
   final _inputOverlayController = InputOverlayController();
 
-  final List<
-    ({Stream<({bool isThinking, String text})> assistant, String user})
-  >
-  _chatHistory = [];
+  final ChatHistory _chatHistory = [];
 
   bool _isGenerating = false;
 
