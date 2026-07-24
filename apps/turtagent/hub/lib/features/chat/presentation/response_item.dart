@@ -120,6 +120,13 @@ class _ResponseItemState extends State<ResponseItem> {
       );
     }
 
-    return MarkdownBody(data: response);
+    return MarkdownBody(
+      data: response,
+      styleSheet: MarkdownStyleSheet(
+        p: const TextStyle(fontSize: 18),
+        h1: const TextStyle(fontSize: 32),
+        h2: const TextStyle(fontSize: 28),
+      ),
+    );
   }
 }

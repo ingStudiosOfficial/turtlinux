@@ -16,10 +16,11 @@ class ChatContainer extends StatefulWidget {
 class _ChatContainerState extends State<ChatContainer> {
   final TextEditingController _promptTextController = TextEditingController();
   final _agentRpcService = AgentRpcService();
-  Stream<({bool isThinking, String text})>? _responseStream;
   final _inputOverlayController = InputOverlayController();
 
-  final List<({({bool isThinking, String text}) assistant, String user})>
+  final List<
+    ({Stream<({bool isThinking, String text})> assistant, String user})
+  >
   _chatHistory = [];
 
   bool _isGenerating = false;
@@ -45,10 +46,26 @@ class _ChatContainerState extends State<ChatContainer> {
         Expanded(
           child: SingleChildScrollView(
             child: Column(
-              children: [
-                if (_responseStream != null)
-                  ResponseItem(responseStream: _responseStream!),
-              ],
+              children: _chatHistory.map((el) {
+                return FractionallySizedBox(
+                  widthFactor: 0.7,
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          el.user,
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: ResponseItem(responseStream: el.assistant),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
           ),
         ),
@@ -124,10 +141,9 @@ class _ChatContainerState extends State<ChatContainer> {
     final stream = _agentRpcService.streamPrompt(text).asBroadcastStream();
 
     setState(() {
-      _responseStream = stream;
       _isGenerating = true;
 
-      _chatHistory.add((assistant: (isThinking: false, text: ''), user: text));
+      _chatHistory.add((assistant: stream, user: text));
     });
 
     _promptTextController.clear();
