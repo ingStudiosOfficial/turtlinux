@@ -39,6 +39,8 @@ dependencies:
   grpc: ^5.1.0
   flutter_markdown_plus: ^1.0.12
   nitrite: ^2.0.4
+  nitrite_hive_adapter: ^2.0.4
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:

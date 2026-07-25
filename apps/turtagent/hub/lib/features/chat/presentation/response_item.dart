@@ -59,7 +59,6 @@ class _ResponseItemState extends State<ResponseItem> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final screenHeight = MediaQuery.of(context).size.height;
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -75,21 +74,15 @@ class _ResponseItemState extends State<ResponseItem> {
             spacing: 8,
             children: [
               Expanded(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: screenHeight * 0.5),
-                  child: SingleChildScrollView(
-                    reverse: true,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (_currentThinking.isNotEmpty)
-                          _generateResponseBody(theme, _currentThinking, true),
-                        if (_currentResponse.isNotEmpty)
-                          _generateResponseBody(theme, _currentResponse, false),
-                      ],
-                    ),
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_currentThinking.isNotEmpty)
+                      _generateResponseBody(theme, _currentThinking, true),
+                    if (_currentResponse.isNotEmpty)
+                      _generateResponseBody(theme, _currentResponse, false),
+                  ],
                 ),
               ),
             ],
