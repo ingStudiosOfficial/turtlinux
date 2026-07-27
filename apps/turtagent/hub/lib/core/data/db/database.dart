@@ -4,6 +4,7 @@ import 'package:nitrite/nitrite.dart';
 import 'package:nitrite_hive_adapter/nitrite_hive_adapter.dart';
 import 'package:path/path.dart' as path;
 import 'package:turtagent_hub/core/data/models/chat_types.dart';
+import 'package:turtagent_hub/core/data/models/database_types.dart';
 
 class ConversationsDb {
   ConversationsDb._internal();
@@ -32,30 +33,15 @@ class ConversationsDb {
   }
 
   void addHistory(ConversationItem item) async {
-    var collection = await _db.getCollection('history');
-    var cursor = collection.find();
-    var currentDocument = await cursor.first;
-
-    var conversations = currentDocument.get<Conversations>('conversations');
-    conversations?.add(item);
-
-    currentDocument.put('conversations', conversations);
-    await collection.update(
-      where('_id').eq(currentDocument.id),
-      currentDocument,
-    );
+    var repository = await _db.getRepository<ConversationItem>(key: 'history');
+    await repository.insert(item);
   }
 
-  Future<Conversations?> getHistory() async {
-    var collection = await _db.getCollection('history');
-    var cursor = collection.find();
-
-    try {
-      var currentDocument = await cursor.first;
-      return currentDocument.get<Conversations>('conversations');
-    } catch (error) {
-      print(error);
-      return null;
-    }
+  Future<Conversations?> getHistory(int amountToLoad) async {
+    var repository = await _db.getRepository<ConversationItem>(key: 'history');
+    var history = await repository
+        .find(findOptions: FindOptions(limit: amountToLoad))
+        .toList();
+    return history;
   }
 }

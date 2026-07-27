@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:turtagent_hub/core/data/models/chat_types.dart';
+import 'package:turtagent_hub/core/data/models/database_types.dart';
 
 class ConversationsSidebar extends StatefulWidget {
   const ConversationsSidebar({super.key});
@@ -10,8 +11,8 @@ class ConversationsSidebar extends StatefulWidget {
 
 class _ConversationsSidebarState extends State<ConversationsSidebar> {
   final Conversations _conversations = [
-    (title: 'Cool chat', history: []),
-    (title: 'Another cool chat', history: []),
+    ConversationItem(id: 'randomid1', title: 'Reddit Mod Shyt', history: []),
+    ConversationItem(id: 'randomid2', title: 'Reddit Mod Shyt 2', history: []),
   ];
 
   @override

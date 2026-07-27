@@ -7,14 +7,7 @@ import 'package:turtagent_hub/features/conversations/presentation/conversations_
 void main() async {
   runApp(const MyApp());
   await ConversationsDb().init();
-  var history = await ConversationsDb().getHistory();
-  if (history == null) {
-    print('History is null');
-  } else {
-    for (final item in history) {
-      print(item.title);
-    }
-  }
+  var history = await ConversationsDb().getHistory(5);
 }
 
 class MyApp extends StatelessWidget {
