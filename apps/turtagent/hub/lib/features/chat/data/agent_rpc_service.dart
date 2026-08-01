@@ -1,4 +1,5 @@
 import 'package:grpc/grpc.dart';
+import 'package:turtagent_hub/core/data/models/database_types.dart';
 import 'package:turtagent_hub/generated/protobuf/turtagent.pbgrpc.dart';
 
 class AgentRpcService {
@@ -15,9 +16,7 @@ class AgentRpcService {
     _client = TurtAgentStreamServiceClient(_channel);
   }
 
-  Stream<({bool isThinking, String text})> streamPrompt(
-    String userPrompt,
-  ) async* {
+  Stream<AssistantMessage> streamPrompt(String userPrompt) async* {
     await cancelCurrentStream();
 
     final request = PromptRequest()..prompt = userPrompt;
@@ -27,7 +26,10 @@ class AgentRpcService {
 
       await for (final response in _currentStream!) {
         if (response.textChunk.isNotEmpty) {
-          yield (isThinking: response.isThinking, text: response.textChunk);
+          yield AssistantMessage(
+            isThinking: response.isThinking,
+            text: response.textChunk,
+          );
         }
 
         if (response.isFinal) break;
@@ -35,7 +37,7 @@ class AgentRpcService {
     } catch (error) {
       if ((error as GrpcError).codeName == 'CANCELLED') return;
 
-      yield (
+      yield AssistantMessage(
         isThinking: false,
         text: 'Error: Lost connection to turtagent daemon',
       );

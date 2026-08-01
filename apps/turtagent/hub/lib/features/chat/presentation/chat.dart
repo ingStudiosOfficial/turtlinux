@@ -1,36 +1,79 @@
 import 'package:flutter/material.dart';
 import 'package:turtagent_hub/core/data/models/chat_types.dart';
+import 'package:turtagent_hub/core/data/models/database_types.dart';
 import 'package:turtagent_hub/features/chat/data/agent_rpc_service.dart';
 import 'package:turtagent_hub/features/chat/presentation/response_item.dart';
 
-class InputOverlayController {
-  void Function()? onEnd;
+class ChatContainerController {
+  VoidCallback? onEnd;
+  ValueChanged<ConversationItem>? _onSetChat;
+
+  void setChat(ConversationItem chat) {
+    debugPrint('In controller setChat.');
+    if (_onSetChat != null) {
+      _onSetChat!(chat);
+    }
+  }
 }
 
 class ChatContainer extends StatefulWidget {
-  const ChatContainer({super.key});
+  final ChatContainerController controller;
+
+  const ChatContainer({super.key, required this.controller});
 
   @override
-  State<StatefulWidget> createState() => _ChatContainerState();
+  State<StatefulWidget> createState() => ChatContainerState();
 }
 
-class _ChatContainerState extends State<ChatContainer> {
+class ChatContainerState extends State<ChatContainer> {
   final TextEditingController _promptTextController = TextEditingController();
   final _agentRpcService = AgentRpcService();
-  final _inputOverlayController = InputOverlayController();
-
   final ChatStreamHistory _chatHistory = [];
 
+  late ConversationItem _currentChat;
   bool _isGenerating = false;
 
   @override
   void initState() {
     super.initState();
-    _inputOverlayController.onEnd = _onDone;
+    _initControllerListeners();
+  }
+
+  @override
+  void didUpdateWidget(covariant ChatContainer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller._onSetChat = null;
+      oldWidget.controller.onEnd = null;
+      _initControllerListeners();
+    }
+  }
+
+  void _initControllerListeners() {
+    widget.controller.onEnd = _onDone;
+    widget.controller._onSetChat = (ConversationItem chat) {
+      debugPrint('Setting chat...');
+
+      setState(() {
+        _currentChat = chat;
+        _chatHistory.clear();
+
+        for (final item in chat.history) {
+          final assistantStream = Stream.value(item.assistant);
+          final messageStream = ChatMessageStream(
+            assistant: assistantStream,
+            user: item.user,
+          );
+          _chatHistory.add(messageStream);
+        }
+      });
+    };
   }
 
   @override
   void dispose() {
+    widget.controller._onSetChat = null;
+    widget.controller.onEnd = null;
     _promptTextController.dispose();
     super.dispose();
   }
@@ -52,8 +95,8 @@ class _ChatContainerState extends State<ChatContainer> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: Text(
-                          el.user,
                           style: const TextStyle(fontSize: 18),
+                          el.user,
                         ),
                       ),
                       Align(
@@ -67,12 +110,12 @@ class _ChatContainerState extends State<ChatContainer> {
             ),
           ),
         ),
-        Center(child: buildInputWidget(theme)),
+        Center(child: _buildInputWidget(theme)),
       ],
     );
   }
 
-  Widget buildInputWidget(ThemeData theme) {
+  Widget _buildInputWidget(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: FractionallySizedBox(
@@ -141,7 +184,7 @@ class _ChatContainerState extends State<ChatContainer> {
     setState(() {
       _isGenerating = true;
 
-      _chatHistory.add((assistant: stream, user: text));
+      _chatHistory.add(ChatMessageStream(assistant: stream, user: text));
     });
 
     _promptTextController.clear();

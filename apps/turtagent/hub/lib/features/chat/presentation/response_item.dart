@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:turtagent_hub/core/data/models/database_types.dart';
 
 class ResponseItem extends StatefulWidget {
-  final Stream<({bool isThinking, String text})> responseStream;
+  final Stream<AssistantMessage> responseStream;
 
   const ResponseItem({super.key, required this.responseStream});
 

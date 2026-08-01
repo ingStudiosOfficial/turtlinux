@@ -29,17 +29,26 @@ class ConversationsDb {
         .path(dbPath)
         .build();
 
-    _db = await Nitrite.builder().loadModule(storeModule).openOrCreate();
+    _db = await Nitrite.builder()
+        .loadModule(storeModule)
+        .registerEntityConverter(ConversationItemConverter())
+        .registerEntityConverter(ChatMessageConverter())
+        .registerEntityConverter(AssistantMessageConverter())
+        .openOrCreate();
   }
 
   void addHistory(ConversationItem item) async {
-    var repository = await _db.getRepository<ConversationItem>(key: 'history');
+    final repository = await _db.getRepository<ConversationItem>(
+      key: 'history',
+    );
     await repository.insert(item);
   }
 
   Future<Conversations?> getHistory(int amountToLoad) async {
-    var repository = await _db.getRepository<ConversationItem>(key: 'history');
-    var history = await repository
+    final repository = await _db.getRepository<ConversationItem>(
+      key: 'history',
+    );
+    final history = await repository
         .find(findOptions: FindOptions(limit: amountToLoad))
         .toList();
     return history;
