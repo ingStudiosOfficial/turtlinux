@@ -38,6 +38,7 @@ class ConversationItemConverter extends EntityConverter<ConversationItem> {
       id: document['id'] ?? "",
       title: document['title'] ?? "",
       history: EntityConverter.toList(document['history'], nitriteMapper),
+      lastUpdated: document['lastUpdated'] ?? DateTime.now(),
     );
     return entity;
   }
@@ -51,6 +52,7 @@ class ConversationItemConverter extends EntityConverter<ConversationItem> {
       'history',
       EntityConverter.fromList(entity.history, nitriteMapper),
     );
+    document.put('lastUpdated', entity.lastUpdated);
     return document;
   }
 }

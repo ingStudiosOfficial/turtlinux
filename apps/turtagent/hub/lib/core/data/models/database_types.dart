@@ -9,11 +9,13 @@ class ConversationItem with _$ConversationItemEntityMixin {
   String id;
   String title;
   List<ChatMessage> history;
+  DateTime lastUpdated;
 
   ConversationItem({
     required this.id,
     required this.title,
     required this.history,
+    required this.lastUpdated,
   });
 }
 
@@ -27,8 +29,8 @@ class ChatMessage {
 
 @Convertable()
 class AssistantMessage {
-  final bool isThinking;
-  final String text;
+  bool isThinking;
+  String text;
 
   AssistantMessage({required this.isThinking, required this.text});
 }

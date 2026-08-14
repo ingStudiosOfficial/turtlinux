@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nitrite/nitrite.dart';
 import 'package:nitrite_hive_adapter/nitrite_hive_adapter.dart';
@@ -39,17 +38,6 @@ class _ConversationsNotifier extends AsyncNotifier<Conversations> {
     state = await AsyncValue.guard(() => getHistory(10));
   }
 
-  Future<void> addHistory(ConversationItem item) async {
-    final currentHistory = state.valueOrNull ?? [];
-    state = await AsyncValue.guard(() async {
-      final repository = await _db.getRepository<ConversationItem>(
-        key: 'history',
-      );
-      await repository.insert(item);
-      return [...currentHistory, item];
-    });
-  }
-
   Future<Conversations> getHistory(int amountToLoad) async {
     final repository = await _db.getRepository<ConversationItem>(
       key: 'history',
@@ -57,7 +45,49 @@ class _ConversationsNotifier extends AsyncNotifier<Conversations> {
     final history = await repository
         .find(findOptions: FindOptions(limit: amountToLoad))
         .toList();
+    history.sort((a, b) => b.lastUpdated.compareTo(a.lastUpdated));
     return history;
+  }
+
+  Future<void> addHistory(ConversationItem item) async {
+    final currentHistory = state.valueOrNull ?? [];
+    state = await AsyncValue.guard(() async {
+      final repository = await _db.getRepository<ConversationItem>(
+        key: 'history',
+      );
+      await repository.insert(item);
+      return [item, ...currentHistory];
+    });
+  }
+
+  Future<void> updateConversation(ConversationItem item) async {
+    final currentHistory = state.valueOrNull ?? [];
+    state = await AsyncValue.guard(() async {
+      final repository = await _db.getRepository<ConversationItem>(
+        key: 'history',
+      );
+      await repository.update(where('id').eq(item.id), item);
+
+      final updatedHistory = currentHistory.map((h) {
+        if (h.id == item.id) {
+          return item;
+        }
+        return h;
+      }).toList();
+      return updatedHistory;
+    });
+  }
+
+  Future<void> deleteConversation(ConversationItem item) async {
+    final currentHistory = state.valueOrNull ?? [];
+    state = await AsyncValue.guard(() async {
+      final repository = await _db.getRepository<ConversationItem>(
+        key: 'history',
+      );
+      await repository.removeOne(item);
+      currentHistory.remove(item);
+      return currentHistory;
+    });
   }
 }
 

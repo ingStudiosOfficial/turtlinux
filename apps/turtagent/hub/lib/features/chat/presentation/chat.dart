@@ -91,8 +91,6 @@ class _ChatContainerState extends ConsumerState<ChatContainer> {
 
   @override
   Widget build(BuildContext context) {
-    final conversationsState = ref.watch(conversationsProvider);
-
     final theme = Theme.of(context);
 
     return Column(
@@ -194,6 +192,7 @@ class _ChatContainerState extends ConsumerState<ChatContainer> {
       id: uuid.v4(),
       title: 'Untitled Chat',
       history: [],
+      lastUpdated: DateTime.now(),
     );
     _chatHistory.clear();
   }
@@ -204,6 +203,7 @@ class _ChatContainerState extends ConsumerState<ChatContainer> {
 
     if (_isNewChat) {
       _currentChat.title = text;
+      _currentChat.lastUpdated = DateTime.now();
       await ref.read(conversationsProvider.notifier).addHistory(_currentChat);
       _isNewChat = false;
     }
@@ -212,9 +212,20 @@ class _ChatContainerState extends ConsumerState<ChatContainer> {
 
     setState(() {
       _isGenerating = true;
-
       _chatHistory.add(ChatMessageStream(assistant: stream, user: text));
+
+      _currentChat.history.add(
+        ChatMessage(
+          assistant: AssistantMessage(isThinking: false, text: ''),
+          user: text,
+        ),
+      );
+      _currentChat.lastUpdated = DateTime.now();
     });
+
+    await ref
+        .read(conversationsProvider.notifier)
+        .updateConversation(_currentChat);
 
     _promptTextController.clear();
 
@@ -226,18 +237,29 @@ class _ChatContainerState extends ConsumerState<ChatContainer> {
     );
   }
 
-  void _onStop() {
+  Future<void> _onStop() async {
     _agentRpcService.cancelCurrentStream();
     _setGeneratingState(false);
+    await _saveAssistantMessage();
   }
 
-  void _onDone() {
+  Future<void> _onDone() async {
     _setGeneratingState(false);
+    await _saveAssistantMessage();
   }
 
   void _setGeneratingState(bool state) {
     setState(() {
       _isGenerating = state;
     });
+  }
+
+  Future<void> _saveAssistantMessage() async {
+    _currentChat.history[_currentChat.history.length - 1].assistant.text =
+        await _chatHistory[_chatHistory.length - 1].assistant.join();
+    _currentChat.lastUpdated = DateTime.now();
+    await ref
+        .read(conversationsProvider.notifier)
+        .updateConversation(_currentChat);
   }
 }

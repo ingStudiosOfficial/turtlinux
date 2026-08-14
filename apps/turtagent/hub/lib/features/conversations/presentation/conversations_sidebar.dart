@@ -34,6 +34,28 @@ class _ConversationsSidebarState extends ConsumerState<ConversationsSidebar> {
                   widget.chatContainerController.setChat(el);
                   Navigator.of(context).pop();
                 },
+                trailing: PopupMenuButton<String>(
+                  onSelected: (String value) async {
+                    switch (value) {
+                      case 'delete':
+                        {
+                          await ref
+                              .read(conversationsProvider.notifier)
+                              .deleteConversation(el);
+                          break;
+                        }
+                    }
+                  },
+                  itemBuilder: (BuildContext ctx) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      child: _buildPopupContent(
+                        Icons.delete_outlined,
+                        'Delete',
+                      ),
+                    ),
+                  ],
+                ),
               );
             }).toList(),
           ),
@@ -48,5 +70,9 @@ class _ConversationsSidebarState extends ConsumerState<ConversationsSidebar> {
         ),
       ],
     );
+  }
+
+  Widget _buildPopupContent(IconData icon, String text) {
+    return Row(spacing: 12, children: [Icon(icon), Text(text)]);
   }
 }
