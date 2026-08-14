@@ -1,31 +1,16 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
-import 'package:turtagent_hub/core/data/db/database.dart';
-import 'package:turtagent_hub/core/data/models/database_types.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:turtagent_hub/features/chat/presentation/chat.dart';
 import 'package:turtagent_hub/features/conversations/presentation/conversations_sidebar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await ConversationsDb().init();
-
-  final initialChat = ConversationItem(
-    id: 'coolid',
-    title: 'Cool Title',
-    history: [
-      ChatMessage(
-        assistant: AssistantMessage(isThinking: false, text: 'hi'),
-        user: 'hi',
-      ),
-    ],
-  );
-
-  runApp(MyApp(initialChat: initialChat));
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatefulWidget {
-  final ConversationItem? initialChat;
-  const MyApp({super.key, this.initialChat});
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -35,18 +20,10 @@ class _MyAppState extends State<MyApp> {
   final _chatContainerController = ChatContainerController();
 
   @override
-  void initState() {
-    super.initState();
-    if (widget.initialChat != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _chatContainerController.setChat(widget.initialChat!);
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final chatContainer = ChatContainer(controller: _chatContainerController);
+
+    _chatContainerController.setChat(null);
 
     return DynamicColorBuilder(
       builder: (ColorScheme? light, ColorScheme? dark) {
@@ -67,7 +44,11 @@ class _MyAppState extends State<MyApp> {
           ),
           home: Scaffold(
             appBar: AppBar(title: const Text('Turtagent Hub')),
-            drawer: Drawer(child: const ConversationsSidebar()),
+            drawer: Drawer(
+              child: ConversationsSidebar(
+                chatContainerController: _chatContainerController,
+              ),
+            ),
             body: chatContainer,
           ),
         );

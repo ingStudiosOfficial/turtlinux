@@ -1,22 +1,17 @@
 import 'dart:io';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nitrite/nitrite.dart';
 import 'package:nitrite_hive_adapter/nitrite_hive_adapter.dart';
 import 'package:path/path.dart' as path;
 import 'package:turtagent_hub/core/data/models/chat_types.dart';
 import 'package:turtagent_hub/core/data/models/database_types.dart';
 
-class ConversationsDb {
-  ConversationsDb._internal();
-  static final ConversationsDb _instance = ConversationsDb._internal();
-
+class _ConversationsNotifier extends AsyncNotifier<Conversations> {
   late Nitrite _db;
 
-  factory ConversationsDb() {
-    return _instance;
-  }
-
-  Future<void> init() async {
+  @override
+  Future<Conversations> build() async {
     final String? home = Platform.environment['HOME'];
     final String storageDir = '.local/share/turtagent_hub/';
     final String dbDir = 'database/';
@@ -35,16 +30,27 @@ class ConversationsDb {
         .registerEntityConverter(ChatMessageConverter())
         .registerEntityConverter(AssistantMessageConverter())
         .openOrCreate();
+
+    return await getHistory(10);
   }
 
-  void addHistory(ConversationItem item) async {
-    final repository = await _db.getRepository<ConversationItem>(
-      key: 'history',
-    );
-    await repository.insert(item);
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => getHistory(10));
   }
 
-  Future<Conversations?> getHistory(int amountToLoad) async {
+  Future<void> addHistory(ConversationItem item) async {
+    final currentHistory = state.valueOrNull ?? [];
+    state = await AsyncValue.guard(() async {
+      final repository = await _db.getRepository<ConversationItem>(
+        key: 'history',
+      );
+      await repository.insert(item);
+      return [...currentHistory, item];
+    });
+  }
+
+  Future<Conversations> getHistory(int amountToLoad) async {
     final repository = await _db.getRepository<ConversationItem>(
       key: 'history',
     );
@@ -54,3 +60,8 @@ class ConversationsDb {
     return history;
   }
 }
+
+final conversationsProvider =
+    AsyncNotifierProvider<_ConversationsNotifier, Conversations>(() {
+      return _ConversationsNotifier();
+    });

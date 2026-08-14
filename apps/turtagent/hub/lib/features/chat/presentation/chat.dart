@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:turtagent_hub/core/data/models/chat_types.dart';
 import 'package:turtagent_hub/core/data/models/database_types.dart';
 import 'package:turtagent_hub/features/chat/data/agent_rpc_service.dart';
 import 'package:turtagent_hub/features/chat/presentation/response_item.dart';
+import 'package:turtagent_hub/features/conversations/providers/conversations_notifier.dart';
+import 'package:uuid/uuid.dart';
 
 class ChatContainerController {
   VoidCallback? onEnd;
-  ValueChanged<ConversationItem>? _onSetChat;
+  ValueChanged<ConversationItem?>? _onSetChat;
 
-  void setChat(ConversationItem chat) {
+  void setChat(ConversationItem? chat) {
     debugPrint('In controller setChat.');
     if (_onSetChat != null) {
       _onSetChat!(chat);
@@ -16,26 +19,28 @@ class ChatContainerController {
   }
 }
 
-class ChatContainer extends StatefulWidget {
+class ChatContainer extends ConsumerStatefulWidget {
   final ChatContainerController controller;
 
   const ChatContainer({super.key, required this.controller});
 
   @override
-  State<StatefulWidget> createState() => ChatContainerState();
+  ConsumerState<ChatContainer> createState() => _ChatContainerState();
 }
 
-class ChatContainerState extends State<ChatContainer> {
+class _ChatContainerState extends ConsumerState<ChatContainer> {
   final TextEditingController _promptTextController = TextEditingController();
   final _agentRpcService = AgentRpcService();
   final ChatStreamHistory _chatHistory = [];
-
   late ConversationItem _currentChat;
   bool _isGenerating = false;
+  bool _isNewChat = true;
+  final uuid = Uuid();
 
   @override
   void initState() {
     super.initState();
+    _createNewChat();
     _initControllerListeners();
   }
 
@@ -46,25 +51,31 @@ class ChatContainerState extends State<ChatContainer> {
       oldWidget.controller._onSetChat = null;
       oldWidget.controller.onEnd = null;
       _initControllerListeners();
+      _createNewChat();
     }
   }
 
   void _initControllerListeners() {
     widget.controller.onEnd = _onDone;
-    widget.controller._onSetChat = (ConversationItem chat) {
+    widget.controller._onSetChat = (ConversationItem? chat) {
       debugPrint('Setting chat...');
 
       setState(() {
-        _currentChat = chat;
-        _chatHistory.clear();
+        if (chat != null) {
+          _isNewChat = false;
+          _currentChat = chat;
+          _chatHistory.clear();
 
-        for (final item in chat.history) {
-          final assistantStream = Stream.value(item.assistant);
-          final messageStream = ChatMessageStream(
-            assistant: assistantStream,
-            user: item.user,
-          );
-          _chatHistory.add(messageStream);
+          for (final item in chat.history) {
+            final assistantStream = Stream.value(item.assistant);
+            final messageStream = ChatMessageStream(
+              assistant: assistantStream,
+              user: item.user,
+            );
+            _chatHistory.add(messageStream);
+          }
+        } else {
+          _createNewChat();
         }
       });
     };
@@ -80,6 +91,8 @@ class ChatContainerState extends State<ChatContainer> {
 
   @override
   Widget build(BuildContext context) {
+    final conversationsState = ref.watch(conversationsProvider);
+
     final theme = Theme.of(context);
 
     return Column(
@@ -175,9 +188,25 @@ class ChatContainerState extends State<ChatContainer> {
     );
   }
 
-  void _onSend() {
+  void _createNewChat() {
+    _isNewChat = true;
+    _currentChat = ConversationItem(
+      id: uuid.v4(),
+      title: 'Untitled Chat',
+      history: [],
+    );
+    _chatHistory.clear();
+  }
+
+  Future<void> _onSend() async {
     final text = _promptTextController.text.trim();
     if (text.isEmpty || _isGenerating) return;
+
+    if (_isNewChat) {
+      _currentChat.title = text;
+      await ref.read(conversationsProvider.notifier).addHistory(_currentChat);
+      _isNewChat = false;
+    }
 
     final stream = _agentRpcService.streamPrompt(text).asBroadcastStream();
 
