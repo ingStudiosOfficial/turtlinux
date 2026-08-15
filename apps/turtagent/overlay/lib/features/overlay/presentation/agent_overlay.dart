@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:turtagent/core/data/models/database_types.dart';
 import 'package:turtagent/features/overlay/data/agent_rpc_service.dart';
 import 'package:turtagent/features/overlay/presentation/input_overlay.dart';
 import 'package:turtagent/features/overlay/presentation/response_overlay.dart';
@@ -17,6 +18,8 @@ class _AgentOverlayState extends State<AgentOverlay> {
   final _agentRpcService = AgentRpcService();
   late Stream<({bool isThinking, String text})> _responseStream;
   final _inputOverlayController = InputOverlayController();
+  late ConversationItem _currentChat;
+  String? _latestAssistantMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +44,11 @@ class _AgentOverlayState extends State<AgentOverlay> {
           .streamPrompt(prompt)
           .asBroadcastStream();
       _responseStream.listen(
-        (data) {},
+        (data) {
+          _latestAssistantMessage = _latestAssistantMessage != null
+              ? (_latestAssistantMessage as String) + data.text
+              : data.text;
+        },
         onDone: () {
           _inputOverlayController.onEnd?.call();
         },

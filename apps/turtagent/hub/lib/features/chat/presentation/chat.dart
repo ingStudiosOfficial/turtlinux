@@ -35,7 +35,8 @@ class _ChatContainerState extends ConsumerState<ChatContainer> {
   late ConversationItem _currentChat;
   bool _isGenerating = false;
   bool _isNewChat = true;
-  final uuid = Uuid();
+  final _uuid = Uuid();
+  String? _latestAssistantMessage;
 
   @override
   void initState() {
@@ -189,7 +190,7 @@ class _ChatContainerState extends ConsumerState<ChatContainer> {
   void _createNewChat() {
     _isNewChat = true;
     _currentChat = ConversationItem(
-      id: uuid.v4(),
+      id: _uuid.v4(),
       title: 'Untitled Chat',
       history: [],
       lastUpdated: DateTime.now(),
@@ -200,6 +201,8 @@ class _ChatContainerState extends ConsumerState<ChatContainer> {
   Future<void> _onSend() async {
     final text = _promptTextController.text.trim();
     if (text.isEmpty || _isGenerating) return;
+
+    _latestAssistantMessage = null;
 
     if (_isNewChat) {
       _currentChat.title = text;
@@ -230,7 +233,11 @@ class _ChatContainerState extends ConsumerState<ChatContainer> {
     _promptTextController.clear();
 
     stream.listen(
-      (data) {},
+      (data) {
+        _latestAssistantMessage = _latestAssistantMessage != null
+            ? (_latestAssistantMessage as String) + data.text
+            : data.text;
+      },
       onDone: () => _onDone(),
       onError: (_) => _onDone(),
       cancelOnError: true,
@@ -256,7 +263,10 @@ class _ChatContainerState extends ConsumerState<ChatContainer> {
 
   Future<void> _saveAssistantMessage() async {
     _currentChat.history[_currentChat.history.length - 1].assistant.text =
-        await _chatHistory[_chatHistory.length - 1].assistant.join();
+        _latestAssistantMessage ?? '';
+    debugPrint(
+      'Assistant message: ${_currentChat.history[_currentChat.history.length - 1].assistant.text}',
+    );
     _currentChat.lastUpdated = DateTime.now();
     await ref
         .read(conversationsProvider.notifier)

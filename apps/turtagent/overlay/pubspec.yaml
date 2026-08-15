@@ -39,6 +39,11 @@ dependencies:
   flutter_markdown_plus: ^1.0.7
   dynamic_color: ^1.8.1
   flutter_single_instance: ^1.1.2
+  nitrite: ^2.0.4
+  nitrite_hive_adapter: ^2.0.4
+  path: ^1.9.1
+  uuid: ^4.6.0
+  flutter_riverpod: ^2.6.1
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +55,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  nitrite_generator: ^2.0.3
+
+plugins:
+  riverpod_lint: ^3.1.8
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

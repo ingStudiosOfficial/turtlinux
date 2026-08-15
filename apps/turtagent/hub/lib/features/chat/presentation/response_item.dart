@@ -83,6 +83,8 @@ class _ResponseItemState extends State<ResponseItem> {
                       _generateResponseBody(theme, _currentThinking, true),
                     if (_currentResponse.isNotEmpty)
                       _generateResponseBody(theme, _currentResponse, false),
+                    if (_currentThinking.isEmpty && _currentResponse.isEmpty)
+                      _buildGeneratingLoader(),
                   ],
                 ),
               ),
@@ -121,6 +123,16 @@ class _ResponseItemState extends State<ResponseItem> {
         h1: const TextStyle(fontSize: 32),
         h2: const TextStyle(fontSize: 28),
       ),
+    );
+  }
+
+  Widget _buildGeneratingLoader() {
+    return Row(
+      spacing: 16,
+      children: [
+        CircularProgressIndicator(),
+        const Text("Thinking...", style: TextStyle(fontSize: 18)),
+      ],
     );
   }
 }

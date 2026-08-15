@@ -21,10 +21,10 @@ type PlasmoidArguments struct {
 }
 
 type KPluginData struct {
-	Name        string `json:"name"`
-	Icon        string `json:"icon"`
-	Description string `json:"description"`
-	Id          string `json:"id"`
+	Name        string `json:"Name"`
+	Icon        string `json:"Icon"`
+	Description string `json:"Description"`
+	Id          string `json:"Id"`
 }
 
 type PlasmoidMetadata struct {
