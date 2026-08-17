@@ -32,7 +32,7 @@ TurtLinux is currently in development. We welcome forks and contributions to any
 
 ### Forks
 
-- **[Tortuga Linux](https://anw.is-a.dev/tortuga)** - uses Turtagent to power its agentic capabilities made my ANW.
+- **[Tortuga Linux](https://anw.is-a.dev/tortuga)** - uses Turtagent to power its agentic capabilities made by ANW.
 
 ## License
 
